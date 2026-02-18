@@ -2,6 +2,12 @@
 
 API REST desenvolvida em **Node.js puro** (sem frameworks) para gerenciar tarefas (tasks) com operações CRUD completas.
 
+> ℹ️ **Escopo do projeto:** o foco principal deste desafio é o **backend** (API, regras e persistência). A interface em React foi criada com apoio do **GitHub Copilot** apenas para facilitar visualização e testes manuais dos endpoints.
+
+## 🌍 English Note
+
+This challenge is primarily **backend-focused** (API design, business rules, and persistence in Node.js). The React frontend was created with **GitHub Copilot** support only to provide a simple UI for visualization and manual API testing.
+
 ## 🚀 Funcionalidades
 
 - ✅ Criar tarefas
@@ -46,6 +52,43 @@ npm start
 ```
 
 O servidor estará rodando em: `http://localhost:3333`
+
+### Iniciar o Frontend (React)
+
+O projeto possui uma interface em React na pasta `frontend/`, criada com apoio do **GitHub Copilot** como camada de visualização da API.
+
+Em um segundo terminal, execute:
+
+```bash
+# instalar dependências do frontend (apenas na primeira vez)
+cd frontend
+npm install
+
+# iniciar frontend
+npm run dev
+```
+
+Ou, a partir da raiz do projeto:
+
+```bash
+npm run frontend:dev
+```
+
+Frontend disponível em: `http://localhost:5173`
+
+> O frontend usa proxy do Vite para a API (`/tasks -> http://localhost:3333`), então você deve manter o backend rodando em paralelo.
+
+### Rodar backend + frontend com um comando
+
+Na raiz do projeto, execute:
+
+```bash
+npm run dev:all
+```
+
+Esse comando inicia:
+- Backend em `http://localhost:3333`
+- Frontend em `http://localhost:5173`
 
 ### Importar tarefas via CSV
 
@@ -182,6 +225,14 @@ DELETE /tasks/:id
 
 ```
 desafio-crud-api/
+├── frontend/
+│   ├── src/
+│   │   ├── App.jsx           # Interface React do CRUD
+│   │   ├── App.css           # Estilos da interface
+│   │   ├── index.css         # Estilos globais
+│   │   └── main.jsx          # Entrada da aplicação React
+│   ├── vite.config.js        # Configuração Vite + proxy para API
+│   └── package.json
 ├── src/
 │   ├── middleware/
 │   │   └── json.js           # Middleware para parsing de JSON
@@ -197,6 +248,15 @@ desafio-crud-api/
 ├── package.json
 └── README.md
 ```
+
+## 🖥️ Funcionalidades do Frontend
+
+- ✅ Criar tarefa
+- ✅ Listar tarefas
+- ✅ Buscar tarefas por texto
+- ✅ Editar tarefa
+- ✅ Marcar/desmarcar como concluída
+- ✅ Excluir tarefa
 
 ## 🗂️ Banco de Dados
 

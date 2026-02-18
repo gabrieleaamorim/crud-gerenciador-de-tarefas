@@ -6,7 +6,11 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "node server.js",
     "dev": "node --watch src/server.js",
-    "import": "node src/import-tasks.js"
+    "import": "node src/import-tasks.js",
+    "frontend:dev": "npm --prefix frontend run dev",
+    "frontend:build": "npm --prefix frontend run build",
+    "frontend:preview": "npm --prefix frontend run preview",
+    "dev:all": "concurrently \"npm run dev\" \"npm run frontend:dev\""
   },
   "type": "module",
   "keywords": [],
@@ -15,5 +19,8 @@
   "description": "",
   "dependencies": {
     "csv-parse": "^6.1.0"
+  },
+  "devDependencies": {
+    "concurrently": "^9.2.1"
   }
 }
