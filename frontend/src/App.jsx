@@ -133,8 +133,8 @@ function App() {
   return (
     <main className="container">
       <header>
-        <h1>Gerenciador de Tarefas</h1>
-        <p>Interface React para o seu CRUD de tarefas.</p>
+        <h1>Minhas tarefas</h1>
+        <p>Um novo checklist de tarefas para organizar seu dia a dia.</p>
       </header>
 
       <section className="panel">
