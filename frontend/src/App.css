@@ -16,6 +16,22 @@
   margin-top: 0;
 }
 
+.tabs {
+  margin-top: 1rem;
+  display: flex;
+  gap: 0.5rem;
+}
+
+.tab {
+  background: #eef2f7;
+  color: #1a2636;
+}
+
+.tab.active {
+  background: #006adc;
+  color: #fff;
+}
+
 .form,
 .search {
   display: grid;
@@ -23,6 +39,7 @@
 }
 
 input,
+select,
 textarea {
   border: 1px solid #c6ccd6;
   border-radius: 8px;
@@ -77,6 +94,30 @@ button.danger {
 
 .task-content p {
   margin: 0.35rem 0 0;
+}
+
+.priority {
+  display: inline-block;
+  margin-top: 0.35rem;
+  border-radius: 999px;
+  padding: 0.2rem 0.55rem;
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+.priority.baixa {
+  background: #eaf7ef;
+  color: #1f7a3f;
+}
+
+.priority.media {
+  background: #fff5e5;
+  color: #9a6700;
+}
+
+.priority.alta {
+  background: #fdecec;
+  color: #b42318;
 }
 
 .task-list li.completed .task-content strong,

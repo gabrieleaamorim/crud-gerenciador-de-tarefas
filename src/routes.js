@@ -3,6 +3,16 @@ import { Database } from "./database.js";
 import { buildRoutePath } from "./utils/build-route-path.js";
 
 const database = new Database();
+const validPriorities = ['baixa', 'media', 'alta'];
+
+function normalizePriority(priority) {
+  if (typeof priority !== 'string') {
+    return 'media';
+  }
+
+  const normalized = priority.toLowerCase();
+  return validPriorities.includes(normalized) ? normalized : 'media';
+}
 
 export const routes = [
     {
@@ -36,11 +46,12 @@ export const routes = [
         method: 'POST',
         path: buildRoutePath('/tasks'),
         handler: (req, res) => {
-            const { title, description } = req.body;
+        const { title, description, priority } = req.body;
             const task = {
                 id: randomUUID(),
                 title, 
                 description,
+          priority: normalizePriority(priority),
                 completed_at: null,
                 created_at: new Date().toISOString(),
                 updated_at: new Date().toISOString()
@@ -91,7 +102,7 @@ export const routes = [
     path: buildRoutePath('/tasks/:id'),
     handler: (req, res) => {
       const { id } = req.params
-      const { title, description } = req.body
+      const { title, description, priority } = req.body
 
       const tasks = database.select('tasks', { id });
 
@@ -102,6 +113,7 @@ export const routes = [
       database.update('tasks', id, { 
         title, 
         description,
+        priority: normalizePriority(priority),
         updated_at: new Date().toISOString()
       })
 

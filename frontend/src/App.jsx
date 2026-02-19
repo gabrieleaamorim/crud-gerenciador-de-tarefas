@@ -2,8 +2,27 @@ import { useEffect, useState } from 'react'
 import './App.css'
 
 const API_URL = '/tasks'
+const priorityLabels = {
+  baixa: 'Baixa',
+  media: 'Média',
+  alta: 'Alta',
+}
+const priorityOrder = {
+  alta: 0,
+  media: 1,
+  baixa: 2,
+}
+
+function sortByPriority(tasks) {
+  return [...tasks].sort((firstTask, secondTask) => {
+    const firstPriority = priorityOrder[firstTask.priority ?? 'media'] ?? 1
+    const secondPriority = priorityOrder[secondTask.priority ?? 'media'] ?? 1
+    return firstPriority - secondPriority
+  })
+}
 
 function App() {
+  const [activeTab, setActiveTab] = useState('tasks')
   const [tasks, setTasks] = useState([])
   const [search, setSearch] = useState('')
   const [loading, setLoading] = useState(false)
@@ -11,6 +30,7 @@ function App() {
   const [editingTaskId, setEditingTaskId] = useState(null)
   const [title, setTitle] = useState('')
   const [description, setDescription] = useState('')
+  const [priority, setPriority] = useState('media')
 
   async function loadTasks(searchTerm = '') {
     setLoading(true)
@@ -60,6 +80,7 @@ function App() {
         body: JSON.stringify({
           title: title.trim(),
           description: description.trim(),
+          priority,
         }),
       })
 
@@ -69,7 +90,9 @@ function App() {
 
       setTitle('')
       setDescription('')
+      setPriority('media')
       setEditingTaskId(null)
+      setActiveTab('tasks')
       await loadTasks(search)
     } catch (submitError) {
       setError(submitError.message)
@@ -80,13 +103,17 @@ function App() {
     setEditingTaskId(task.id)
     setTitle(task.title)
     setDescription(task.description)
+    setPriority(task.priority ?? 'media')
     setError('')
+    setActiveTab('create')
   }
 
   function cancelEdit() {
     setEditingTaskId(null)
     setTitle('')
     setDescription('')
+    setPriority('media')
+    setActiveTab('tasks')
   }
 
   async function handleDelete(taskId) {
@@ -130,6 +157,9 @@ function App() {
     await loadTasks(search)
   }
 
+  const pendingTasks = sortByPriority(tasks.filter((task) => task.completed_at === null))
+  const completedTasks = sortByPriority(tasks.filter((task) => task.completed_at !== null))
+
   return (
     <main className="container">
       <header>
@@ -137,72 +167,149 @@ function App() {
         <p>Um novo checklist de tarefas para organizar seu dia a dia.</p>
       </header>
 
-      <section className="panel">
-        <h2>{editingTaskId ? 'Editar tarefa' : 'Nova tarefa'}</h2>
+      <nav className="tabs" aria-label="Navegação principal">
+        <button
+          type="button"
+          className={activeTab === 'tasks' ? 'tab active' : 'tab'}
+          onClick={() => setActiveTab('tasks')}
+        >
+          Tarefas
+        </button>
+        <button
+          type="button"
+          className={activeTab === 'create' ? 'tab active' : 'tab'}
+          onClick={() => setActiveTab('create')}
+        >
+          Criar tarefa
+        </button>
+        <button
+          type="button"
+          className={activeTab === 'completed' ? 'tab active' : 'tab'}
+          onClick={() => setActiveTab('completed')}
+        >
+          Concluídas
+        </button>
+      </nav>
 
-        <form className="form" onSubmit={handleSubmit}>
-          <label htmlFor="title">Título</label>
-          <input
-            id="title"
-            value={title}
-            onChange={(event) => setTitle(event.target.value)}
-            placeholder="Ex: Estudar React"
-          />
+      {activeTab === 'tasks' && (
+        <section className="panel">
+          <h2>Tarefas</h2>
 
-          <label htmlFor="description">Descrição</label>
-          <textarea
-            id="description"
-            value={description}
-            onChange={(event) => setDescription(event.target.value)}
-            placeholder="Detalhes da tarefa"
-            rows={3}
-          />
+          <form className="search" onSubmit={handleSearch}>
+            <input
+              value={search}
+              onChange={(event) => setSearch(event.target.value)}
+              placeholder="Buscar por título ou descrição"
+            />
+            <button type="submit" className="secondary">
+              Buscar
+            </button>
+          </form>
 
-          <div className="form-actions">
-            <button type="submit">{editingTaskId ? 'Salvar' : 'Criar'}</button>
-            {editingTaskId && (
-              <button type="button" className="secondary" onClick={cancelEdit}>
-                Cancelar
-              </button>
-            )}
-          </div>
-        </form>
-      </section>
+          {error && <p className="error">{error}</p>}
+          {loading && <p>Carregando...</p>}
 
-      <section className="panel">
-        <h2>Tarefas</h2>
+          {!loading && pendingTasks.length === 0 && <p>Nenhuma tarefa pendente encontrada.</p>}
 
-        <form className="search" onSubmit={handleSearch}>
-          <input
-            value={search}
-            onChange={(event) => setSearch(event.target.value)}
-            placeholder="Buscar por título ou descrição"
-          />
-          <button type="submit" className="secondary">
-            Buscar
-          </button>
-        </form>
+          {!loading && pendingTasks.length > 0 && (
+            <ul className="task-list">
+              {pendingTasks.map((task) => {
+                return (
+                  <li key={task.id}>
+                    <div className="task-content">
+                      <strong>{task.title}</strong>
+                      <span className={`priority ${task.priority ?? 'media'}`}>
+                        Prioridade: {priorityLabels[task.priority ?? 'media']}
+                      </span>
+                      <p>{task.description}</p>
+                    </div>
 
-        {error && <p className="error">{error}</p>}
-        {loading && <p>Carregando...</p>}
+                    <div className="task-actions">
+                      <button type="button" className="secondary" onClick={() => handleToggleComplete(task.id)}>
+                        Concluir
+                      </button>
+                      <button type="button" className="secondary" onClick={() => handleEdit(task)}>
+                        Editar
+                      </button>
+                      <button type="button" className="danger" onClick={() => handleDelete(task.id)}>
+                        Excluir
+                      </button>
+                    </div>
+                  </li>
+                )
+              })}
+            </ul>
+          )}
+        </section>
+      )}
 
-        {!loading && tasks.length === 0 && <p>Nenhuma tarefa encontrada.</p>}
+      {activeTab === 'create' && (
+        <section className="panel">
+          <h2>{editingTaskId ? 'Editar tarefa' : 'Nova tarefa'}</h2>
 
-        {!loading && tasks.length > 0 && (
-          <ul className="task-list">
-            {tasks.map((task) => {
-              const completed = task.completed_at !== null
+          <form className="form" onSubmit={handleSubmit}>
+            <label htmlFor="title">Título</label>
+            <input
+              id="title"
+              value={title}
+              onChange={(event) => setTitle(event.target.value)}
+              placeholder="Ex: Estudar React"
+            />
 
-              return (
-                <li key={task.id} className={completed ? 'completed' : ''}>
+            <label htmlFor="description">Descrição</label>
+            <textarea
+              id="description"
+              value={description}
+              onChange={(event) => setDescription(event.target.value)}
+              placeholder="Detalhes da tarefa"
+              rows={3}
+            />
+
+            <label htmlFor="priority">Nível de prioridade</label>
+            <select id="priority" value={priority} onChange={(event) => setPriority(event.target.value)}>
+              <option value="baixa">Baixa</option>
+              <option value="media">Média</option>
+              <option value="alta">Alta</option>
+            </select>
+
+            {error && <p className="error">{error}</p>}
+
+            <div className="form-actions">
+              <button type="submit">{editingTaskId ? 'Salvar' : 'Criar'}</button>
+              {editingTaskId && (
+                <button type="button" className="secondary" onClick={cancelEdit}>
+                  Cancelar
+                </button>
+              )}
+            </div>
+          </form>
+        </section>
+      )}
+
+      {activeTab === 'completed' && (
+        <section className="panel">
+          <h2>Tarefas concluídas</h2>
+
+          {error && <p className="error">{error}</p>}
+          {loading && <p>Carregando...</p>}
+
+          {!loading && completedTasks.length === 0 && <p>Nenhuma tarefa concluída.</p>}
+
+          {!loading && completedTasks.length > 0 && (
+            <ul className="task-list">
+              {completedTasks.map((task) => (
+                <li key={task.id} className="completed">
                   <div className="task-content">
                     <strong>{task.title}</strong>
+                    <span className={`priority ${task.priority ?? 'media'}`}>
+                      Prioridade: {priorityLabels[task.priority ?? 'media']}
+                    </span>
                     <p>{task.description}</p>
                   </div>
 
                   <div className="task-actions">
                     <button type="button" className="secondary" onClick={() => handleToggleComplete(task.id)}>
-                      {completed ? 'Reabrir' : 'Concluir'}
+                      Reabrir
                     </button>
                     <button type="button" className="secondary" onClick={() => handleEdit(task)}>
                       Editar
@@ -212,11 +319,11 @@ function App() {
                     </button>
                   </div>
                 </li>
-              )
-            })}
-          </ul>
-        )}
-      </section>
+              ))}
+            </ul>
+          )}
+        </section>
+      )}
     </main>
   )
 }
